@@ -197,7 +197,7 @@ function initChart(people, married) {
                 legend: { display: false }
             },
             scales: {
-                x: { title: { display: true, text: '收入 (元)' }, min: 0, max: 10000000 },
+                x: { type: 'linear', title: { display: true, text: '收入 (元)' }, min: 0, max: 10000000, ticks: { callback: (v) => v.toLocaleString() } },
                 y: { title: { display: true, text: '稅額 (元)' } }
             }
         },
