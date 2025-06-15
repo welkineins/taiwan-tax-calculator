@@ -46,7 +46,9 @@ button { margin-top: 20px; padding: 10px 15px; }
 </select>
 <button onclick="calculate()">計算稅額</button>
 <div class="result" id="result"></div>
+<canvas id="taxChart" height="300"></canvas>
 </div>
+<script src="chart.umd.js"></script>
 <script>
 function calcTaxableIncome(total, people, married) {
     var exemption = 92000 * people;
@@ -72,6 +74,81 @@ function calcTax(amount) {
     return 0;
 }
 
+function buildData(people, married) {
+    var data = [];
+    for (var i = 0; i <= 10000000; i += 10000) {
+        var taxable = calcTaxableIncome(i, people, married);
+        var tax = calcTax(taxable);
+        data.push({ x: i, y: tax });
+    }
+    return data;
+}
+
+var taxChart;
+var lineDataset = { label: '稅額', data: [], borderColor: 'blue', pointRadius: 0, fill: false };
+var highlightDataset = { label: '輸入值', data: [], backgroundColor: 'red', pointRadius: 5, showLine: false };
+
+const hoverLine = {
+    id: 'hoverLine',
+    afterDraw(chart) {
+        var tooltip = chart.tooltip;
+        if (tooltip && tooltip._active && tooltip._active.length) {
+            var ctx = chart.ctx;
+            var x = tooltip._active[0].element.x;
+            var topY = chart.chartArea.top;
+            var bottomY = chart.chartArea.bottom;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x, topY);
+            ctx.lineTo(x, bottomY);
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+};
+
+function initChart(people, married) {
+    var ctx = document.getElementById('taxChart').getContext('2d');
+    lineDataset.data = buildData(people, married);
+    taxChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [lineDataset, highlightDataset]
+        },
+        options: {
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '收入: ' + context.parsed.x.toLocaleString() + ' 元\n稅額: ' + context.parsed.y.toLocaleString() + ' 元';
+                        }
+                    }
+                },
+                legend: { display: false }
+            },
+            scales: {
+                x: { title: { display: true, text: '收入 (元)' } },
+                y: { title: { display: true, text: '稅額 (元)' } }
+            }
+        },
+        plugins: [hoverLine]
+    });
+}
+
+function updateChart(income, people, married) {
+    lineDataset.data = buildData(people, married);
+    if (income > 0) {
+        var taxable = calcTaxableIncome(income, people, married);
+        highlightDataset.data = [{ x: income, y: calcTax(taxable) }];
+    } else {
+        highlightDataset.data = [];
+    }
+    taxChart.update();
+}
+
 function calculate() {
     var income = parseFloat(document.getElementById('income').value || '0');
     var people = parseInt(document.getElementById('dependents').value || '1');
@@ -79,7 +156,12 @@ function calculate() {
     var taxable = calcTaxableIncome(income, people, married);
     var tax = calcTax(taxable);
     document.getElementById('result').textContent = '預估應納稅額：' + Math.round(tax).toLocaleString() + ' 元';
+    updateChart(income, people, married);
 }
+
+window.addEventListener('DOMContentLoaded', function() {
+    initChart(1, false);
+});
 </script>
 </body>
 </html>
