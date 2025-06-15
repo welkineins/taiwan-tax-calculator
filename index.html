@@ -26,21 +26,38 @@ body {
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
-.tab { display: flex; border-bottom: 1px solid var(--md-outline); }
+.tab { display: flex; position: relative; border-bottom: 1px solid var(--md-outline); }
 .tab button {
     flex: 1;
-    padding: 12px;
+    padding: 16px 12px;
     background: none;
     border: none;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 500;
+    color: #1D1B20;
+    position: relative;
 }
-.tab button.active {
-    color: var(--md-primary);
-    border-bottom: 3px solid var(--md-primary);
+.tab button::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: transparent;
+    transition: background-color .3s;
 }
+.tab button.active { color: var(--md-primary); }
+.tab button.active::after { background: var(--md-primary); }
 .tabcontent { display: none; padding-top: 16px; }
-h1 { text-align: center; margin-bottom: 16px; }
+h1 { margin: 0; font-size: 1.5em; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.header a {
+    color: inherit;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.header svg { width: 24px; height: 24px; fill: currentColor; }
 label { display: block; margin-top: 16px; font-weight: 700; }
 input[type="number"] {
     width: 100%;
@@ -65,6 +82,13 @@ button:hover { background-color: #57408C; }
     font-size: 1.2em;
     font-weight: bold;
 }
+.action-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
 table {
     width: 100%;
     border-collapse: collapse;
@@ -75,11 +99,22 @@ th, td {
     border-bottom: 1px solid #ccc;
     text-align: center;
 }
+.footer {
+    text-align: center;
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 24px;
+}
 </style>
 </head>
 <body>
 <div class="container">
+<div class="header">
 <h1>2024 年綜合所得稅試算</h1>
+<a href="https://github.com/example/taiwan-tax-calculator" target="_blank" aria-label="GitHub repository">
+<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+</a>
+</div>
 <div class="tab">
   <button class="tablinks" onclick="openTab(event,'intro')">所得稅介紹</button>
   <button class="tablinks" id="defaultTab" onclick="openTab(event,'calc')">計算稅額</button>
@@ -90,38 +125,47 @@ th, td {
   <p>先以 <strong>綜合所得總額</strong> 扣除 <strong>免稅額</strong> 與 <strong>標準扣除額</strong>，得到應納稅額。</p>
   <p>依下列級距計算稅額：</p>
   <table>
-      <thead>
-          <tr><th>級距</th><th>稅率</th></tr>
-      </thead>
-      <tbody>
-          <tr><td>0 ～ 560,000 元</td><td>5%</td></tr>
-          <tr><td>560,001 ～ 1,260,000 元</td><td>12%</td></tr>
-          <tr><td>1,260,001 ～ 2,520,000 元</td><td>20%</td></tr>
-          <tr><td>2,520,001 ～ 4,720,000 元</td><td>30%</td></tr>
-          <tr><td>4,720,001 元以上</td><td>40%</td></tr>
-      </tbody>
+        <thead>
+            <tr><th>級距</th><th>稅率</th><th>累進扣除額</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>0 ～ 560,000 元</td><td>5%</td><td>0</td></tr>
+            <tr><td>560,001 ～ 1,260,000 元</td><td>12%</td><td>39,200</td></tr>
+            <tr><td>1,260,001 ～ 2,520,000 元</td><td>20%</td><td>140,000</td></tr>
+            <tr><td>2,520,001 ～ 4,720,000 元</td><td>30%</td><td>392,000</td></tr>
+            <tr><td>4,720,001 元以上</td><td>40%</td><td>864,000</td></tr>
+        </tbody>
   </table>
   <ul>
   <li>免稅額：92,000 元</li>
   <li>標準扣除額：124,000 元</li>
+  <li>累進扣除額又稱速算扣除數，可從表格查得</li>
   <li>此範例未考慮其他扣除額與各式減免</li>
   </ul>
 </div>
 <div id="calc" class="tabcontent">
   <label for="income">綜合所得總額 (新台幣)：</label>
   <input id="income" type="number" placeholder="請輸入年度綜合所得" />
-  <p>計算式：<br>應納稅額 ＝ 綜合所得總額 − 92,000 − 124,000</p>
-  <button onclick="calculate()">計算稅額</button>
-  <div class="result" id="result"></div>
+  <p>計算式：<br>應納稅額 ＝ 綜合所得總額 − 92,000 − 124,000（負值視為 0）<br>稅額 ＝ 應納稅額 × 稅率 − 累進扣除額</p>
+  <div class="action-row">
+    <button onclick="calculate()">計算稅額</button>
+    <div class="result" id="result"></div>
+  </div>
 </div>
 <div id="reverse" class="tabcontent">
   <label for="taxInput">已計算之稅額 (新台幣)：</label>
   <input id="taxInput" type="number" placeholder="請輸入稅額" />
-  <button onclick="reverseCalc()">推估收入</button>
-  <div class="result" id="reverseResult"></div>
+  <div class="action-row">
+    <button onclick="reverseCalc()">推估收入</button>
+    <div class="result" id="reverseResult"></div>
+  </div>
 </div>
 <canvas id="taxChart" height="200"></canvas>
 </div>
+<footer class="footer">
+  <span id="time"></span><br>
+  &copy; 2025 製作者: welkineins
+</footer>
 <script src="chart.umd.js"></script>
 <script>
 function calcTaxableIncome(total) {
@@ -133,10 +177,10 @@ function calcTaxableIncome(total) {
 function calcTax(amount) {
     var brackets = [
         { threshold: 0, rate: 0.05, base: 0 },
-        { threshold: 560000, rate: 0.12, base: 28000 },
-        { threshold: 1260000, rate: 0.20, base: 112000 },
-        { threshold: 2520000, rate: 0.30, base: 364000 },
-        { threshold: 4720000, rate: 0.40, base: 1024000 }
+        { threshold: 560000, rate: 0.12, base: 39200 },
+        { threshold: 1260000, rate: 0.20, base: 140000 },
+        { threshold: 2520000, rate: 0.30, base: 392000 },
+        { threshold: 4720000, rate: 0.40, base: 864000 }
     ];
     for (var i = brackets.length - 1; i >= 0; i--) {
         var b = brackets[i];
@@ -149,10 +193,10 @@ function calcTax(amount) {
 function calcIncomeFromTax(tax) {
     var brackets = [
         { threshold: 0, rate: 0.05, base: 0 },
-        { threshold: 560000, rate: 0.12, base: 28000 },
-        { threshold: 1260000, rate: 0.20, base: 112000 },
-        { threshold: 2520000, rate: 0.30, base: 364000 },
-        { threshold: 4720000, rate: 0.40, base: 1024000 }
+        { threshold: 560000, rate: 0.12, base: 39200 },
+        { threshold: 1260000, rate: 0.20, base: 140000 },
+        { threshold: 2520000, rate: 0.30, base: 392000 },
+        { threshold: 4720000, rate: 0.40, base: 864000 }
     ];
     for (var i = brackets.length - 1; i >= 0; i--) {
         var b = brackets[i];
@@ -273,6 +317,7 @@ function openTab(evt, name) {
 window.addEventListener('DOMContentLoaded', function() {
     initChart();
     document.getElementById('defaultTab').click();
+    document.getElementById('time').textContent = new Date().toLocaleString();
 });
 </script>
 </body>
