@@ -66,6 +66,7 @@ input[type="number"] {
     border: 1px solid var(--md-outline);
     border-radius: 4px;
     background: var(--md-surface);
+    box-sizing: border-box;
 }
 button {
     margin-top: 24px;
@@ -77,6 +78,9 @@ button {
     cursor: pointer;
 }
 button:hover { background-color: #57408C; }
+.tab button:hover {
+    background-color: rgba(0,0,0,0.05);
+}
 .result {
     margin-top: 24px;
     font-size: 1.2em;
@@ -184,8 +188,8 @@ function calcTax(amount) {
     ];
     for (var i = brackets.length - 1; i >= 0; i--) {
         var b = brackets[i];
-        if (amount > b.threshold) {
-            return b.base + (amount - b.threshold) * b.rate;
+        if (amount >= b.threshold) {
+            return amount * b.rate - b.base;
         }
     }
     return 0;
@@ -200,8 +204,8 @@ function calcIncomeFromTax(tax) {
     ];
     for (var i = brackets.length - 1; i >= 0; i--) {
         var b = brackets[i];
-        if (tax >= b.base) {
-            var taxable = b.threshold + (tax - b.base) / b.rate;
+        var taxable = (tax + b.base) / b.rate;
+        if (taxable >= b.threshold) {
             return taxable + 92000 + 124000;
         }
     }
