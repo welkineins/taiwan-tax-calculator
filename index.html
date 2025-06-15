@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台灣綜合所得稅試算 (2024年度)</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 40px; background: #f0f0f0; }
+.container { max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+h1 { text-align: center; }
+label { display: block; margin-top: 10px; }
+input[type="number"] { width: 100%; padding: 8px; margin-top: 5px; }
+button { margin-top: 20px; padding: 10px 15px; }
+.result { margin-top: 20px; font-size: 1.2em; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>2024 年綜合所得稅試算</h1>
+<p>此工具僅供參考，使用 2024 年度（2025/05 繳稅）預估之稅率與免稅額資料。實際稅額以財政部公告為準。</p>
+<h2>計算方式簡介</h2>
+<ul>
+<li>先以 <strong>綜合所得總額</strong> 扣除 <strong>免稅額</strong> 與 <strong>標準扣除額</strong>，得到應納稅額。</li>
+<li>依下列級距計算稅額：
+    <ul>
+        <li>0 ～ 560,000 元：5%</li>
+        <li>560,001 ～ 1,260,000 元：12%</li>
+        <li>1,260,001 ～ 2,520,000 元：20%</li>
+        <li>2,520,001 ～ 4,720,000 元：30%</li>
+        <li>4,720,001 元以上：40%</li>
+    </ul>
+</li>
+<li>免稅額（每人）：92,000 元</li>
+<li>標準扣除額：單身 124,000 元，夫妻合併申報 248,000 元</li>
+<li>此範例未考慮其他扣除額與各式減免</li>
+</ul>
+<h2>試算</h2>
+<label for="income">綜合所得總額 (新台幣)：</label>
+<input id="income" type="number" placeholder="請輸入年度綜合所得" />
+<label for="dependents">申報人數 (含本人)：</label>
+<input id="dependents" type="number" value="1" min="1" />
+<label for="married">夫妻合併申報？</label>
+<select id="married">
+<option value="no">否</option>
+<option value="yes">是</option>
+</select>
+<button onclick="calculate()">計算稅額</button>
+<div class="result" id="result"></div>
+</div>
+<script>
+function calcTaxableIncome(total, people, married) {
+    var exemption = 92000 * people;
+    var standardDeduction = married ? 248000 : 124000;
+    var taxable = total - exemption - standardDeduction;
+    return taxable > 0 ? taxable : 0;
+}
+
+function calcTax(amount) {
+    var brackets = [
+        { threshold: 0, rate: 0.05, base: 0 },
+        { threshold: 560000, rate: 0.12, base: 28000 },
+        { threshold: 1260000, rate: 0.20, base: 112000 },
+        { threshold: 2520000, rate: 0.30, base: 364000 },
+        { threshold: 4720000, rate: 0.40, base: 1024000 }
+    ];
+    for (var i = brackets.length - 1; i >= 0; i--) {
+        var b = brackets[i];
+        if (amount > b.threshold) {
+            return b.base + (amount - b.threshold) * b.rate;
+        }
+    }
+    return 0;
+}
+
+function calculate() {
+    var income = parseFloat(document.getElementById('income').value || '0');
+    var people = parseInt(document.getElementById('dependents').value || '1');
+    var married = document.getElementById('married').value === 'yes';
+    var taxable = calcTaxableIncome(income, people, married);
+    var tax = calcTax(taxable);
+    document.getElementById('result').textContent = '預估應納稅額：' + Math.round(tax).toLocaleString() + ' 元';
+}
+</script>
+</body>
+</html>
