@@ -26,9 +26,23 @@ body {
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
+.tab { display: flex; border-bottom: 1px solid var(--md-outline); }
+.tab button {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+.tab button.active {
+    color: var(--md-primary);
+    border-bottom: 3px solid var(--md-primary);
+}
+.tabcontent { display: none; padding-top: 16px; }
 h1 { text-align: center; margin-bottom: 16px; }
 label { display: block; margin-top: 16px; font-weight: 700; }
-input[type="number"], select {
+input[type="number"] {
     width: 100%;
     padding: 12px;
     margin-top: 4px;
@@ -66,50 +80,56 @@ th, td {
 <body>
 <div class="container">
 <h1>2024 年綜合所得稅試算</h1>
-<p>此工具僅供參考，使用 2024 年度（2025/05 繳稅）預估之稅率與免稅額資料。實際稅額以財政部公告為準。</p>
-<h2>計算方式簡介</h2>
-<p>先以 <strong>綜合所得總額</strong> 扣除 <strong>免稅額</strong> 與 <strong>標準扣除額</strong>，得到應納稅額。</p>
-<p>依下列級距計算稅額：</p>
-<table>
-    <thead>
-        <tr><th>級距</th><th>稅率</th></tr>
-    </thead>
-    <tbody>
-        <tr><td>0 ～ 560,000 元</td><td>5%</td></tr>
-        <tr><td>560,001 ～ 1,260,000 元</td><td>12%</td></tr>
-        <tr><td>1,260,001 ～ 2,520,000 元</td><td>20%</td></tr>
-        <tr><td>2,520,001 ～ 4,720,000 元</td><td>30%</td></tr>
-        <tr><td>4,720,001 元以上</td><td>40%</td></tr>
-    </tbody>
-</table>
-<ul>
-<li>免稅額（每人）：92,000 元</li>
-<li>標準扣除額：單身 124,000 元，夫妻合併申報 248,000 元</li>
-<li>此範例未考慮其他扣除額與各式減免</li>
-</ul>
-<h2>試算</h2>
-<label for="income">綜合所得總額 (新台幣)：</label>
-<input id="income" type="number" placeholder="請輸入年度綜合所得" />
-<label for="dependents">申報人數 (含本人)：</label>
-<input id="dependents" type="number" value="1" min="1" />
-<label for="married">夫妻合併申報？</label>
-<select id="married">
-<option value="no">否</option>
-<option value="yes">是</option>
-</select>
-<button onclick="calculate()">計算稅額</button>
-<div class="result" id="result"></div>
-<canvas id="taxChart" height="300"></canvas>
+<div class="tab">
+  <button class="tablinks" onclick="openTab(event,'intro')">所得稅介紹</button>
+  <button class="tablinks" id="defaultTab" onclick="openTab(event,'calc')">計算稅額</button>
+  <button class="tablinks" onclick="openTab(event,'reverse')">稅額推估收入</button>
+</div>
+<div id="intro" class="tabcontent">
+  <p>此工具僅供參考，使用 2024 年度（2025/05 繳稅）預估之稅率與免稅額資料。實際稅額以財政部公告為準。</p>
+  <p>先以 <strong>綜合所得總額</strong> 扣除 <strong>免稅額</strong> 與 <strong>標準扣除額</strong>，得到應納稅額。</p>
+  <p>依下列級距計算稅額：</p>
+  <table>
+      <thead>
+          <tr><th>級距</th><th>稅率</th></tr>
+      </thead>
+      <tbody>
+          <tr><td>0 ～ 560,000 元</td><td>5%</td></tr>
+          <tr><td>560,001 ～ 1,260,000 元</td><td>12%</td></tr>
+          <tr><td>1,260,001 ～ 2,520,000 元</td><td>20%</td></tr>
+          <tr><td>2,520,001 ～ 4,720,000 元</td><td>30%</td></tr>
+          <tr><td>4,720,001 元以上</td><td>40%</td></tr>
+      </tbody>
+  </table>
+  <ul>
+  <li>免稅額：92,000 元</li>
+  <li>標準扣除額：124,000 元</li>
+  <li>此範例未考慮其他扣除額與各式減免</li>
+  </ul>
+</div>
+<div id="calc" class="tabcontent">
+  <label for="income">綜合所得總額 (新台幣)：</label>
+  <input id="income" type="number" placeholder="請輸入年度綜合所得" />
+  <p>計算式：<br>應納稅額 ＝ 綜合所得總額 − 92,000 − 124,000</p>
+  <button onclick="calculate()">計算稅額</button>
+  <div class="result" id="result"></div>
+</div>
+<div id="reverse" class="tabcontent">
+  <label for="taxInput">已計算之稅額 (新台幣)：</label>
+  <input id="taxInput" type="number" placeholder="請輸入稅額" />
+  <button onclick="reverseCalc()">推估收入</button>
+  <div class="result" id="reverseResult"></div>
+</div>
+<canvas id="taxChart" height="200"></canvas>
 </div>
 <script src="chart.umd.js"></script>
 <script>
-function calcTaxableIncome(total, people, married) {
-    var exemption = 92000 * people;
-    var standardDeduction = married ? 248000 : 124000;
+function calcTaxableIncome(total) {
+    var exemption = 92000;
+    var standardDeduction = 124000;
     var taxable = total - exemption - standardDeduction;
     return taxable > 0 ? taxable : 0;
 }
-
 function calcTax(amount) {
     var brackets = [
         { threshold: 0, rate: 0.05, base: 0 },
@@ -126,17 +146,32 @@ function calcTax(amount) {
     }
     return 0;
 }
-
-function buildData(people, married) {
+function calcIncomeFromTax(tax) {
+    var brackets = [
+        { threshold: 0, rate: 0.05, base: 0 },
+        { threshold: 560000, rate: 0.12, base: 28000 },
+        { threshold: 1260000, rate: 0.20, base: 112000 },
+        { threshold: 2520000, rate: 0.30, base: 364000 },
+        { threshold: 4720000, rate: 0.40, base: 1024000 }
+    ];
+    for (var i = brackets.length - 1; i >= 0; i--) {
+        var b = brackets[i];
+        if (tax >= b.base) {
+            var taxable = b.threshold + (tax - b.base) / b.rate;
+            return taxable + 92000 + 124000;
+        }
+    }
+    return 92000 + 124000;
+}
+function buildData() {
     var data = [];
     for (var i = 0; i <= 10000000; i += 10000) {
-        var taxable = calcTaxableIncome(i, people, married);
+        var taxable = calcTaxableIncome(i);
         var tax = calcTax(taxable);
         data.push({ x: i, y: tax });
     }
     return data;
 }
-
 var taxChart;
 var lineDataset = {
     label: '稅額',
@@ -154,7 +189,6 @@ var highlightDataset = {
     showLine: false,
     parsing: { xAxisKey: 'x', yAxisKey: 'y' }
 };
-
 const hoverLine = {
     id: 'hoverLine',
     afterDraw(chart) {
@@ -175,15 +209,12 @@ const hoverLine = {
         }
     }
 };
-
-function initChart(people, married) {
+function initChart() {
     var ctx = document.getElementById('taxChart').getContext('2d');
-    lineDataset.data = buildData(people, married);
+    lineDataset.data = buildData();
     taxChart = new Chart(ctx, {
         type: 'line',
-        data: {
-            datasets: [lineDataset, highlightDataset]
-        },
+        data: { datasets: [lineDataset, highlightDataset] },
         options: {
             interaction: { mode: 'index', intersect: false },
             plugins: {
@@ -204,30 +235,44 @@ function initChart(people, married) {
         plugins: [hoverLine]
     });
 }
-
-function updateChart(income, people, married) {
-    lineDataset.data = buildData(people, married);
+function updateChart(income) {
+    lineDataset.data = buildData();
     if (income > 0) {
-        var taxable = calcTaxableIncome(income, people, married);
+        var taxable = calcTaxableIncome(income);
         highlightDataset.data = [{ x: income, y: calcTax(taxable) }];
     } else {
         highlightDataset.data = [];
     }
     taxChart.update();
 }
-
 function calculate() {
     var income = parseFloat(document.getElementById('income').value || '0');
-    var people = parseInt(document.getElementById('dependents').value || '1');
-    var married = document.getElementById('married').value === 'yes';
-    var taxable = calcTaxableIncome(income, people, married);
+    var taxable = calcTaxableIncome(income);
     var tax = calcTax(taxable);
     document.getElementById('result').textContent = '預估應納稅額：' + Math.round(tax).toLocaleString() + ' 元';
-    updateChart(income, people, married);
+    updateChart(income);
 }
-
+function reverseCalc() {
+    var tax = parseFloat(document.getElementById('taxInput').value || '0');
+    var income = calcIncomeFromTax(tax);
+    document.getElementById('reverseResult').textContent = '推估收入：約 ' + Math.round(income).toLocaleString() + ' 元';
+    updateChart(income);
+}
+function openTab(evt, name) {
+    var tabs = document.getElementsByClassName('tabcontent');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].style.display = 'none';
+    }
+    var btns = document.getElementsByClassName('tablinks');
+    for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+    }
+    document.getElementById(name).style.display = 'block';
+    evt.currentTarget.classList.add('active');
+}
 window.addEventListener('DOMContentLoaded', function() {
-    initChart(1, false);
+    initChart();
+    document.getElementById('defaultTab').click();
 });
 </script>
 </body>
