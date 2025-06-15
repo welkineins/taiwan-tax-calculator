@@ -138,8 +138,22 @@ function buildData(people, married) {
 }
 
 var taxChart;
-var lineDataset = { label: '稅額', data: [], borderColor: 'blue', pointRadius: 0, fill: false };
-var highlightDataset = { label: '輸入值', data: [], backgroundColor: 'red', pointRadius: 5, showLine: false };
+var lineDataset = {
+    label: '稅額',
+    data: [],
+    borderColor: 'blue',
+    pointRadius: 0,
+    fill: false,
+    parsing: { xAxisKey: 'x', yAxisKey: 'y' }
+};
+var highlightDataset = {
+    label: '輸入值',
+    data: [],
+    backgroundColor: 'red',
+    pointRadius: 5,
+    showLine: false,
+    parsing: { xAxisKey: 'x', yAxisKey: 'y' }
+};
 
 const hoverLine = {
     id: 'hoverLine',
